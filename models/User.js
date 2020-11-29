@@ -1,6 +1,7 @@
 // models/User.js
 
 var mongoose = require('mongoose');
+var bcrypt = require('bcryptjs');
 
 // Schema
 var userSchema = mongoose.Schema({
@@ -49,15 +50,36 @@ userSchema.path('password').validate(function(v) {
         if(!user.currentPassword) {
             user.invalidate('currentPassword', 'Current Pasword is required!');
         }
-        else if(user.currentPassword != user.originalPassword) {
+        else if(!bcrypt.compareSync(user.currentPassword, user.originalPassword)) {     // currentPassword를 hash하여 originalPassword와 비교
             user.invalidate('currentPassword', 'Current Password is invalid!');
         }
+        // else if(user.currentPassword != user.originalPassword) {
+        //     user.invalidate('currentPassword', 'Current Password is invalid!');
+        // }
 
         if(user.newPassword !== user.passwordConfirmation) {
             user.invalidate('passwordConfirmation', 'Password Confirmation does not matched!');
         }
     }
 });
+
+// hash password
+userSchema.pre('save', function(next) {
+    var user = this;
+    if(!user.isModified('password')) {
+        return next();
+    }
+    else {
+        user.password = bcrypt.hashSync(user.password); // user 수정 시나 user.password 변경 시 password를 hash값으로 변경
+        return next();
+    }
+});
+
+// model methods
+userSchema.methods.authenticate = function(password) {
+    var user = this;
+    return bcrypt.compareSync(password, user.password);
+};
 
 // model & export
 var User = mongoose.model('user', userSchema);

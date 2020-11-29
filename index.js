@@ -22,7 +22,7 @@ db.on('error', function(err) {
 
 // Other settings
 app.set('view engine', 'ejs');
-app.use(express.static(__dirname+'public'));
+app.use(express.static(__dirname+'/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(methodOverride('_method'));
@@ -30,6 +30,7 @@ app.use(methodOverride('_method'));
 // Routes
 app.use('/', require('./routes/home'));
 app.use('/posts', require('./routes/posts'));
+app.use('/users', require('./routes/users'));
 
 // Port setting
 var port = 3000;
